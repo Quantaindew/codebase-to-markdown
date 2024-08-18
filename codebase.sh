@@ -6,18 +6,23 @@ rm -f "$OUTPUT_FILE"
 # Start the codebase.md file
 echo "# Codebase Contents" > "$OUTPUT_FILE"
 
+# Function to escape special regex characters
+escape_regex() {
+    echo "$1" | tr -d '\n' | sed 's/[]\/$*.^|[]/\\&/g'
+}
+
 # Function to generate gitignore patterns
 generate_gitignore_patterns() {
-    echo -n "\.git|$OUTPUT_FILE"  # Always ignore .git folder and the output file itself
+    echo -n "^./\\.git($|/)"  # Always ignore .git folder
+    echo -n "|^./$OUTPUT_FILE$"  # Ignore the output file itself
     if [ -f .gitignore ]; then
         while IFS= read -r line || [[ -n "$line" ]]; do
             # Ignore comments and empty lines
             if [[ ! "$line" =~ ^\s*# && -n "$line" ]]; then
-                # Escape special characters and convert gitignore globs to regex
-                escaped_line=$(echo "$line" | sed 's/[.\^$*+?()[\]{}|]/\\&/g')
-                escaped_line=$(echo "$escaped_line" | sed 's/\*/.*/g')
-                escaped_line=$(echo "$escaped_line" | sed 's/^/|/')
-                echo -n "$escaped_line"
+                # Convert gitignore globs to regex
+                pattern=$(escape_regex "$line")
+                pattern=${pattern//\*/.*}
+                echo -n "|^./$pattern($|/)"
             fi
         done < .gitignore
     fi
@@ -72,12 +77,12 @@ should_ignore() {
     gitignore_patterns=$(generate_gitignore_patterns)
 
     # Check if the path matches any gitignore pattern
-    echo "$path" | grep -qE "($gitignore_patterns)"
+    [[ $path =~ $gitignore_patterns ]]
 }
 
 # Loop through all files in the directory and subdirectories
 find . -type f | while read -r file; do
-    if ! should_ignore "${file#./}"; then
+    if ! should_ignore "$file"; then
         add_file_contents "$file" "$OUTPUT_FILE"
     fi
 done
