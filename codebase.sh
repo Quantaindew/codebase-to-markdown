@@ -11,27 +11,24 @@ escape_regex() {
     echo "$1" | tr -d '\n' | sed 's/[]\/$*.^|[]/\\&/g'
 }
 
-# Function to generate gitignore patterns
-generate_gitignore_patterns() {
-    echo -n "^./\\.git($|/)"  # Always ignore .git folder
-    echo -n "|^./$OUTPUT_FILE$"  # Ignore the output file itself
+# Function to generate ignore patterns for tree command
+generate_tree_ignore_patterns() {
+    local patterns="-I '.git' -I '$OUTPUT_FILE'"
     if [ -f .gitignore ]; then
         while IFS= read -r line || [[ -n "$line" ]]; do
             # Ignore comments and empty lines
             if [[ ! "$line" =~ ^\s*# && -n "$line" ]]; then
-                # Convert gitignore globs to regex
-                pattern=$(escape_regex "$line")
-                pattern=${pattern//\*/.*}
-                echo -n "|^./$pattern($|/)"
+                patterns+=" -I '$line'"
             fi
         done < .gitignore
     fi
+    echo "$patterns"
 }
 
 # Add the tree structure to the file
 echo "## Project Structure" >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
-tree -I "$(generate_gitignore_patterns)" >> "$OUTPUT_FILE"
+eval tree $(generate_tree_ignore_patterns) -L 3 -F >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
 
@@ -42,42 +39,70 @@ add_file_contents() {
     echo "## File: $file" >> "$target_file"
     echo '```' >> "$target_file"
     
-    # Check if the file is binary or an image
-    if is_binary_or_image "$file"; then
-        echo "[Binary or image file, contents not displayed]" >> "$target_file"
-    else
-        cat "$file" >> "$target_file"
-    fi
+    # Check if the file is binary, image, or text
+    local file_type=$(get_file_type "$file")
+    case "$file_type" in
+        "image")
+            echo "[Image file, contents not displayed]" >> "$target_file"
+            ;;
+        "binary")
+            echo "[Binary file, contents not displayed]" >> "$target_file"
+            ;;
+        "text")
+            cat "$file" >> "$target_file"
+            ;;
+    esac
     
     echo '```' >> "$target_file"
     echo "" >> "$target_file"
 }
 
-# Function to check if a file is binary or an image
-is_binary_or_image() {
+# Function to determine file type (image, binary, or text)
+get_file_type() {
     local file="$1"
+    
+    # Use 'file' command to determine the file type
     local mime_type=$(file -b --mime-type "$file")
     
-    # Check if the file is binary or an image
-    if [[ $mime_type == application/* && $mime_type != application/x-empty && $mime_type != application/json && $mime_type != application/xml ]] || 
-       [[ $mime_type == image/* ]] || 
-       [[ "${file##*.}" =~ ^(png|jpg|jpeg|gif|bmp|svg)$ ]]; then
-        return 0  # It's a binary or image file
+    # Check if it's an image file
+    if [[ $mime_type == image/* ]]; then
+        echo "image"
+        return
+    fi
+    
+    # Check if it's explicitly a text type
+    if [[ $mime_type == text/* || 
+          $mime_type == application/json || 
+          $mime_type == application/xml || 
+          $mime_type == application/javascript ]]; then
+        echo "text"
+        return
+    fi
+    
+    # For other types, use a heuristic approach
+    if LC_ALL=C grep -qP "[\x00]" "$file"; then
+        echo "binary"  # File contains null bytes, likely binary
+    elif LC_ALL=C grep -qP "[\x00-\x08\x0E-\x1F\x7F]" <(head -c 1024 "$file"); then
+        echo "binary"  # File contains control characters, likely binary
     else
-        return 1  # It's not a binary or image file
+        echo "text"  # Likely a text file
     fi
 }
 
 # Function to check if a file should be ignored
 should_ignore() {
     local path="$1"
-    local gitignore_patterns
-
-    # Generate gitignore patterns (including .git and the output file)
-    gitignore_patterns=$(generate_gitignore_patterns)
-
-    # Check if the path matches any gitignore pattern
-    [[ $path =~ $gitignore_patterns ]]
+    if [ -f .gitignore ]; then
+        while IFS= read -r pattern; do
+            # Ignore comments and empty lines
+            if [[ ! "$pattern" =~ ^\s*# && -n "$pattern" ]]; then
+                if [[ "$path" == $pattern || "$path" == *"/$pattern"* ]]; then
+                    return 0
+                fi
+            fi
+        done < .gitignore
+    fi
+    [[ "$path" == "./.git" || "$path" == "./$OUTPUT_FILE" ]]
 }
 
 # Loop through all files in the directory and subdirectories
