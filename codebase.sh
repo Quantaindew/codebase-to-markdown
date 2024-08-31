@@ -92,17 +92,19 @@ get_file_type() {
 # Function to check if a file should be ignored
 should_ignore() {
     local path="$1"
+    if [[ "$path" == ./.git* || "$path" == "./$OUTPUT_FILE" ]]; then
+        return 0
+    fi
     if [ -f .gitignore ]; then
         while IFS= read -r pattern; do
-            # Ignore comments and empty lines
             if [[ ! "$pattern" =~ ^\s*# && -n "$pattern" ]]; then
-                if [[ "$path" == $pattern || "$path" == *"/$pattern"* ]]; then
+                if [[ "$path" == *"$pattern"* ]]; then
                     return 0
                 fi
             fi
         done < .gitignore
     fi
-    [[ "$path" == "./.git" || "$path" == "./$OUTPUT_FILE" ]]
+    return 1
 }
 
 # Loop through all files in the directory and subdirectories
