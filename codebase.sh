@@ -7,20 +7,24 @@ echo "# Codebase Contents" > "$OUTPUT_FILE"
 
 echo "Starting script at $(date)"
 
-# Function to check if a file is a text file
-is_text_file() {
-    file -b --mime-type "$1" | grep -q '^text/'
+# Function to check if a file is NOT a binary/image file
+is_valid_text_file() {
+    ! file -i "$1" | grep -qE 'binary|charset=binary|image/'
 }
 
 echo "Processing files..."
 git ls-files | while read -r file; do
-    if [[ -f "$file" ]] && is_text_file "$file"; then
-        echo "Adding $file"
-        echo "## File: $file" >> "$OUTPUT_FILE"
-        echo '```' >> "$OUTPUT_FILE"
-        cat "$file" >> "$OUTPUT_FILE"
-        echo '```' >> "$OUTPUT_FILE"
-        echo "" >> "$OUTPUT_FILE"
+    if [[ -f "$file" ]]; then
+        if is_valid_text_file "$file"; then
+            echo "Adding $file"
+            echo "## File: $file" >> "$OUTPUT_FILE"
+            echo '```' >> "$OUTPUT_FILE"
+            cat "$file" >> "$OUTPUT_FILE"
+            echo '```' >> "$OUTPUT_FILE"
+            echo "" >> "$OUTPUT_FILE"
+        else
+            echo "Skipping $file (likely binary or image file)"
+        fi
     fi
 done
 
