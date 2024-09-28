@@ -7,6 +7,14 @@ echo "# Codebase Contents" > "$OUTPUT_FILE"
 
 echo "Starting script at $(date)"
 
+# Generate tree structure
+echo "Generating tree structure..."
+echo "## Project Structure" >> "$OUTPUT_FILE"
+echo '```' >> "$OUTPUT_FILE"
+tree -I ".git|$OUTPUT_FILE" --gitignore >> "$OUTPUT_FILE"
+echo '```' >> "$OUTPUT_FILE"
+echo "" >> "$OUTPUT_FILE"
+
 # Function to check if a file is NOT a binary/image file
 is_valid_text_file() {
     ! file -i "$1" | grep -qE 'binary|charset=binary|image/'
