@@ -67,5 +67,5 @@ done
 echo "File processing completed at $(date)"
 
 echo "Codebase conversion complete. Output saved to $OUTPUT_FILE"
-la $OUTPUT_FILE
+ls -lh $OUTPUT_FILE
 echo "Script finished at $(date)"
