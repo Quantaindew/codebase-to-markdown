@@ -4,68 +4,62 @@ OUTPUT_FILE="codebase.md"
 rm -f "$OUTPUT_FILE"
 
 echo "# Codebase Contents" > "$OUTPUT_FILE"
-echo "" >> "$OUTPUT_FILE"
 
 echo "Starting script at $(date)"
 
-# Function to check if a file is a text file
-is_text_file() {
-    file -b --mime-type "$1" | grep -q '^text/'
-}
-
-# Function to check if a file or directory should be ignored
+# Function to check if a file should be ignored based on .gitignore patterns
 should_ignore() {
-    local path="$1"
-    
-    # Always ignore .git directory and codebase.md
-    [[ "$path" == ".git"* ]] && return 0
-    [[ "$path" == "$OUTPUT_FILE" ]] && return 0
-    
-    # Check against .gitignore patterns
-    if [[ -f ".gitignore" ]]; then
-        while IFS= read -r pattern || [[ -n "$pattern" ]]; do
+    local file="$1"
+    if [ -f ".gitignore" ]; then
+        while IFS= read -r pattern; do
             [[ $pattern =~ ^# ]] && continue  # Skip comments
             [[ -z $pattern ]] && continue     # Skip empty lines
-            if [[ "$path" == $pattern ]] || [[ "$path" == *"/$pattern"* ]]; then
-                return 0
+            if [[ $file == $pattern || $file == */$pattern || $file == $pattern/* || $file == */$pattern/* ]]; then
+                return 0  # Should be ignored
             fi
-        done < ".gitignore"
+        done < .gitignore
     fi
-    return 1
+    return 1  # Should not be ignored
 }
 
 # Generate tree structure
 echo "Generating tree structure..."
 echo "## Project Structure" >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
-tree -I ".git|$OUTPUT_FILE" --gitignore >> "$OUTPUT_FILE"
+tree -I "$OUTPUT_FILE" -P "*" | while read -r line; do
+    file=$(echo "$line" | sed 's/^[│├└─]* //')
+    if ! should_ignore "$file"; then
+        echo "$line"
+    fi
+done >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
 
-echo "Processing files..."
-
-process_directory() {
-    local dir="$1"
-    for item in "$dir"/*; do
-        if [[ -d "$item" ]]; then
-            if ! should_ignore "$item"; then
-                process_directory "$item"
-            fi
-        elif [[ -f "$item" ]]; then
-            local relative_path="${item#./}"
-            if ! should_ignore "$relative_path" && is_text_file "$item"; then
-                echo "Adding $relative_path"
-                echo "## File: $relative_path" >> "$OUTPUT_FILE"
-                echo '```' >> "$OUTPUT_FILE"
-                cat "$item" >> "$OUTPUT_FILE"
-                echo '```' >> "$OUTPUT_FILE"
-                echo "" >> "$OUTPUT_FILE"
-            fi
-        fi
-    done
+# Function to check if a file is NOT a binary/image file
+is_valid_text_file() {
+    ! file -i "$1" | grep -qE 'binary|charset=binary|image/'
 }
 
-process_directory "."
+echo "Processing files..."
+find . -type f | while read -r file; do
+    file="${file#./}"  # Remove leading './' if present
+    if [[ "$file" != "$OUTPUT_FILE" && ! $(should_ignore "$file") ]]; then
+        if [[ -f "$file" ]]; then
+            if is_valid_text_file "$file"; then
+                echo "Adding $file"
+                echo "## File: $file" >> "$OUTPUT_FILE"
+                echo '```' >> "$OUTPUT_FILE"
+                cat "$file" >> "$OUTPUT_FILE"
+                echo '```' >> "$OUTPUT_FILE"
+                echo "" >> "$OUTPUT_FILE"
+            else
+                echo "Skipping $file (likely binary or image file)"
+            fi
+        fi
+    else
+        echo "Skipping $file (ignored by .gitignore or output file)"
+    fi
+done
 
 echo "File processing completed at $(date)"
 
