@@ -10,8 +10,8 @@ echo "Starting script at $(date)"
 # Function to check if a file should be ignored based on .gitignore patterns
 should_ignore() {
     local file="$1"
-    if [ "$file" == ".gitignore" ]; then
-        return 0  # Ignore .gitignore file itself
+    if [ "$file" == ".gitignore" ] || [[ "$file" == .git* ]]; then
+        return 0  # Ignore .gitignore file itself and .git folder
     fi
     if [ -f ".gitignore" ]; then
         while IFS= read -r pattern; do
@@ -60,7 +60,7 @@ find . -type f | while read -r file; do
             fi
         fi
     else
-        echo "Skipping $file (ignored by .gitignore, is .gitignore, or is output file)"
+        echo "Skipping $file (ignored by .gitignore, is .gitignore, is .git folder, or is output file)"
     fi
 done
 
