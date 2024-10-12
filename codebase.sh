@@ -39,4 +39,7 @@ done
 echo "File processing completed at $(date)"
 
 echo "Codebase conversion complete. Output saved to $OUTPUT_FILE"
+echo "File size:"
+ls -lh $OUTPUT_FILE
+
 echo "Script finished at $(date)"
