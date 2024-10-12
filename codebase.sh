@@ -24,7 +24,7 @@ is_valid_text_file() {
 echo "Processing files..."
 
 # Use tree to list files, respecting .gitignore, and remove leading './'
-tree -i --noreport --gitignore | while read -r file; do
+tree -if --noreport --gitignore | sed 's|^./||' | while read -r file; do
     # Skip directories and excluded files
     if [ -f "$file" ] && [ "$file" != "$OUTPUT_FILE" ] && [ "$file" != "$SCRIPT_NAME" ]; then
         if is_valid_text_file "$file"; then
