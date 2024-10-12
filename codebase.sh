@@ -28,7 +28,7 @@ git ls-files | while read -r file; do
             echo "## File: $file" >> "$OUTPUT_FILE"
             echo '```' >> "$OUTPUT_FILE"
             cat "$file" >> "$OUTPUT_FILE"
-            echo '```' >> "$OUTPUT_FILE"
+            echo -e '\n```' >> "$OUTPUT_FILE"
             echo "" >> "$OUTPUT_FILE"
         else
             echo "Skipping $file (likely binary or image file)"
