@@ -12,7 +12,7 @@ echo "Starting script at $(date)"
 echo "Generating tree structure..."
 echo "## Project Structure" >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
-tree -I ".git|$OUTPUT_FILE|$SCRIPT_NAME" --gitignore >> "$OUTPUT_FILE"
+tree -I ".git|$OUTPUT_FILE|$SCRIPT_NAME" -a --gitignore >> "$OUTPUT_FILE"
 echo '```' >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
 
@@ -24,7 +24,7 @@ is_valid_text_file() {
 echo "Processing files..."
 
 # Use tree to list files, respecting .gitignore, and remove leading './'
-tree -if --noreport --gitignore | sed 's|^./||' | while read -r file; do
+tree -if -I ".git|$OUTPUT_FILE|$SCRIPT_NAME" -a --gitignore | sed 's|^./||' | while read -r file; do
     # Skip directories and excluded files
     if [ -f "$file" ] && [ "$file" != "$OUTPUT_FILE" ] && [ "$file" != "$SCRIPT_NAME" ]; then
         if is_valid_text_file "$file"; then
