@@ -3,7 +3,6 @@
 #![warn(clippy::print_stderr)]
 #![warn(clippy::print_stdout)]
 
-
 use std::collections::VecDeque;
 use std::fmt::{self, Display};
 use std::rc::Rc;

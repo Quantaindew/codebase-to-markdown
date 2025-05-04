@@ -3,12 +3,12 @@ mod tree; // Declare the tree module
 
 use crate::tree::Tree; // Import the Tree struct
 use chrono::Local;
+use ignore::WalkBuilder;
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{self, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::process;
-use ignore::WalkBuilder;
 
 const OUTPUT_FILE: &str = "codebase.md";
 
@@ -62,7 +62,13 @@ fn run() -> io::Result<()> {
         match entry {
             Ok(entry) => {
                 if entry.depth() > 0 {
-                    all_paths.push(entry.path().strip_prefix("./").unwrap_or(entry.path()).to_path_buf());
+                    all_paths.push(
+                        entry
+                            .path()
+                            .strip_prefix("./")
+                            .unwrap_or(entry.path())
+                            .to_path_buf(),
+                    );
                 }
             }
             Err(e) => eprintln!("Warning: Failed to process entry: {}", e),
@@ -180,9 +186,7 @@ fn build_file_tree(paths: &[PathBuf]) -> (Tree<String>, usize, usize) {
 }
 
 fn escape_xml(s: &str) -> String {
-    s.replace('&', "&")
-     .replace('<', "<")
-     .replace('>', ">")
+    s.replace('&', "&").replace('<', "<").replace('>', ">")
 }
 
 fn format_file_size(size: u64) -> String {
