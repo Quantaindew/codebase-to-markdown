@@ -156,13 +156,11 @@ fn run() -> io::Result<()> {
 
                 match fs::read_to_string(path) {
                     Ok(content) => {
-                        // Write content, escaping XML special characters
-                        writer.write_all(escape_xml(&content).as_bytes())?;
-                        // ---> START FIX <---
-                        // Ensure there's a newline *before* the closing tag,
-                        // regardless of whether the original file content ended with one.
-                        writer.write_all(b"\n")?;
-                        // ---> END FIX <---
+                        let escaped_content = escape_xml(&content);
+                        // ---> START CORRECTED FIX <---
+                        // Write the content and *always* add a newline afterwards using writeln!
+                        writeln!(writer, "{}", escaped_content)?;
+                        // ---> END CORRECTED FIX <---
                     }
                     Err(e) => {
                         eprintln!(
