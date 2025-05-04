@@ -1,24 +1,23 @@
 # codebase-to-markdown
 Convert your codebase into a formatted markdown file for inference
-This script will convert your all text in your project into a neatly formatted markdown file, it will ignore files and directories defined in `.gitignore`
+This cli tool will convert your all text in your project into a neatly formatted markdown file, it will ignore files and directories defined in `.gitignore`
 
 ### Prerequisites: 
-`1. bash POSIX compatible terminal (git-bash, bash, zsh, etc..)` 
-
-`2. tree`
+[`cargo`](https://www.rust-lang.org/tools/install)
 
 ---
 
 ## How To use 
 
-First run
+First Install the cli tool using cargo
 ```bash
-chmod +x ./codebase.sh
+
+cargo install --git https://github.com/Quantaindew/codebase-to-markdown --branch rust
 ```
 
-then
+then run
 ```bash
-./codebase.sh
+codebase-to-markdown
 ```
 
 
