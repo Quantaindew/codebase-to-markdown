@@ -120,7 +120,10 @@ fn run() -> io::Result<()> {
         OUTPUT_FILE
     );
     match fs::metadata(&output_path) {
-        Ok(metadata) => println!("File size: {} bytes", metadata.len()),
+        Ok(metadata) => {
+            let size = metadata.len();
+            println!("File size: {}", format_file_size(size));
+        }
         Err(e) => eprintln!("Warning: Could not get file metadata: {}", e),
     }
     println!(
@@ -180,4 +183,20 @@ fn escape_xml(s: &str) -> String {
     s.replace('&', "&")
      .replace('<', "<")
      .replace('>', ">")
+}
+
+fn format_file_size(size: u64) -> String {
+    const KB: u64 = 1024;
+    const MB: u64 = KB * 1024;
+    const GB: u64 = MB * 1024;
+
+    if size < KB {
+        format!("{} bytes", size)
+    } else if size < MB {
+        format!("{:.3} KB", size as f64 / KB as f64)
+    } else if size < GB {
+        format!("{:.3} MB", size as f64 / MB as f64)
+    } else {
+        format!("{:.3} GB", size as f64 / GB as f64)
+    }
 }
