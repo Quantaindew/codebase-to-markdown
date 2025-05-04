@@ -55,6 +55,7 @@ fn run() -> io::Result<()> {
         .git_exclude(true)
         .require_git(false)
         .sort_by_file_path(|a, b| a.cmp(b))
+        .follow_links(true) // Enable following symlinks
         .filter_entry(filter)
         .build();
 
