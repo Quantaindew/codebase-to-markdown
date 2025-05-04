@@ -1,8 +1,4 @@
 // src/tree.rs
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
-#![warn(clippy::print_stderr)]
-#![warn(clippy::print_stdout)]
-
 use std::collections::VecDeque;
 use std::fmt::{self, Display};
 use std::rc::Rc;
@@ -200,8 +196,3 @@ impl Default for GlyphPalette {
         Self::new()
     }
 }
-
-// Note: Removed doctest reference as it depends on external files
-// #[doc = include_str!("../README.md")]
-// #[cfg(doctest)]
-// pub struct ReadmeDoctests;
