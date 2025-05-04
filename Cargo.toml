@@ -5,5 +5,4 @@ edition = "2024"
 
 [dependencies]
 chrono = "0.4.41"
-content_inspector = "0.2.4"
 ignore = "0.4.23"
