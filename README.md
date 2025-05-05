@@ -21,8 +21,12 @@ This tool converts all text files in your project into a neatly formatted markdo
 ### Option 1: Using the Rust CLI
 1. Install the CLI tool using Cargo:
    ```bash
-   cargo install --git https://github.com/Quantaindew/codebase-to-markdown
+   cargo install codebase-to-markdown
    ```
+   Alternatively, you can install the CLI tool using Cargo from the GitHub repository:
+   ```bash
+   cargo install --git https://github.com/Quantaindew/codebase-to-markdown
+   ````
 2. Run the tool:
    ```bash
    codebase-to-markdown
