@@ -13,14 +13,14 @@ chrono = "0.4.41"
 ignore = "0.4.23"
 
 [profile.release]
-opt-level = 3             # Maximum optimization
-lto = "fat"               # Full Link Time Optimization
-codegen-units = 1         # Maximize optimizations by using a single codegen unit
-panic = "abort"           # Remove panic unwinding code
-strip = true              # Strip symbols from binary
-overflow-checks = false   # Disable integer overflow checks
-debug = false             # No debug symbols
-incremental = false       # Disable incremental compilation
+opt-level = 3           # Maximum optimization
+lto = "fat"             # Full Link Time Optimization
+codegen-units = 1       # Maximize optimizations by using a single codegen unit
+panic = "abort"         # Remove panic unwinding code
+strip = true            # Strip symbols from binary
+overflow-checks = false # Disable integer overflow checks
+debug = false           # No debug symbols
+incremental = false     # Disable incremental compilation
 
 [profile.dev]
-opt-level = 3             # Use max optimizations even in dev builds
+opt-level = 3 # Use max optimizations even in dev builds
