@@ -1,6 +1,6 @@
 [package]
 name = "codebase-to-markdown"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 authors = ["Sanjay S Kumar"]
 description = "A tool to convert codebase to markdown format"
